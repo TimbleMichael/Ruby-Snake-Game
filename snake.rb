@@ -52,23 +52,38 @@ class Snake
 
     private
 
-    def head
-        @positions.last
-    end
-
     def newCoords(x,y)
         [x % GIRD_WIDTH, y % GIRD_HEIGHT]
     end
 
+    def head
+        @positions.last
+    end
 end
 
+class Game
+    def initialize
+        @score = 0
+        @foodX = rand(GIRD_WIDTH)
+        @foodY = rand(GIRD_HEIGHT)
+    end 
+
+    def draw
+        Square.new(x: @foodX * GRID_SIZE, y: @foodY * GRID_SIZE, size: GRID_SIZE, color: 'yellow')
+        Text.new("Score: #{@score}", color: "green", x: 10, y: 10, size: 25)
+    end
+end
+
+
 snake = Snake.new
+game = Game.new
 
 update do
     clear
 
     snake.move
     snake.draw
+    game.draw
 end
 
 on :key_down do |event|

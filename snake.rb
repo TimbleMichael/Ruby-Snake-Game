@@ -19,6 +19,7 @@ class Snake
     def initialize
         @positions = [[2,0],[2,1],[2,2],[2,3]]
         @direction = 'down'
+        @growing = false
     end
 
     def draw
@@ -28,7 +29,10 @@ class Snake
     end
 
     def move
-        @positions.shift
+        if !@growing
+            @positions.shift
+        end
+        
         case @direction
         when 'down'
             @positions.push(newCoords(head[0], head[1] + 1))
@@ -39,6 +43,7 @@ class Snake
         when 'right'
             @positions.push(newCoords(head[0] + 1, head[1]))
         end
+        @growing = false
     end
 
     def canChangeDirectionTo?(newDirection)
@@ -48,6 +53,18 @@ class Snake
         when 'right' then newDirection != 'left'
         when 'left' then newDirection != 'right'
         end
+    end
+
+    def x
+        head[0]
+    end
+
+    def y
+        head[1]
+    end
+
+    def grow 
+        @growing = true
     end
 
     private
@@ -72,6 +89,16 @@ class Game
         Square.new(x: @foodX * GRID_SIZE, y: @foodY * GRID_SIZE, size: GRID_SIZE, color: 'yellow')
         Text.new("Score: #{@score}", color: "green", x: 10, y: 10, size: 25)
     end
+
+    def snakeHitFood?(x, y)
+        @foodX == x && @foodY == y
+    end
+
+    def recordHit
+        @score += 1
+        @foodX = rand(GIRD_WIDTH)
+        @foodY = rand(GIRD_HEIGHT)
+    end
 end
 
 
@@ -84,6 +111,11 @@ update do
     snake.move
     snake.draw
     game.draw
+
+    if game.snakeHitFood?(snake.x, snake.y)
+        game.recordHit
+        snake.grow
+    end
 end
 
 on :key_down do |event|

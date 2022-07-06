@@ -6,6 +6,7 @@ require 'ruby2d'
 # In order for a GUI to show up xLaunch was installed
 set background: 'black'
 set fps_cap: 15
+set title: "Snake"
 
 # W x H = 640 * 480
 
@@ -67,6 +68,10 @@ class Snake
         @growing = true
     end
 
+    def hitItself?
+        @positions.uniq.length != @positions.length
+    end
+
     private
 
     def newCoords(x,y)
@@ -83,11 +88,15 @@ class Game
         @score = 0
         @foodX = rand(GIRD_WIDTH)
         @foodY = rand(GIRD_HEIGHT)
+        @finished = false
     end 
 
     def draw
-        Square.new(x: @foodX * GRID_SIZE, y: @foodY * GRID_SIZE, size: GRID_SIZE, color: 'yellow')
-        Text.new("Score: #{@score}", color: "green", x: 10, y: 10, size: 25)
+        unless finished?
+            Square.new(x: @foodX * GRID_SIZE, y: @foodY * GRID_SIZE, size: GRID_SIZE, color: 'yellow')
+        end
+
+        Text.new(message, color: "green", x: 10, y: 10, size: 25)
     end
 
     def snakeHitFood?(x, y)
@@ -99,6 +108,24 @@ class Game
         @foodX = rand(GIRD_WIDTH)
         @foodY = rand(GIRD_HEIGHT)
     end
+
+    def finish
+        @finished = true
+    end
+
+    def finished?
+        @finished
+    end
+
+    private
+
+    def message
+        if finished?
+            "Game Over, your Score was: #{@score}. Press 'R' to Restart"
+        else
+            "Score: #{@score}"
+        end
+    end
 end
 
 
@@ -108,13 +135,20 @@ game = Game.new
 update do
     clear
 
-    snake.move
+    unless game.finished?
+        snake.move
+    end
+    
     snake.draw
     game.draw
 
     if game.snakeHitFood?(snake.x, snake.y)
         game.recordHit
         snake.grow
+    end
+
+    if snake.hitItself?
+        game.finish
     end
 end
 
@@ -123,6 +157,9 @@ on :key_down do |event|
     if snake.canChangeDirectionTo?(event.key)
         snake.direction = event.key
     end
+elsif event.key == 'r'
+    snake = Snake.new
+    game = Game.new
   end
 end
 
